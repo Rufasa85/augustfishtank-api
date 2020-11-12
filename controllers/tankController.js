@@ -24,8 +24,24 @@ const checkAuthStatus = request => {
 
 
 router.get("/",(req,res)=>{
-    db.Tank.findAll().then(tanks=>{
+    db.Tank.findAll({
+        include:[db.Fish]
+    }).then(tanks=>{
         res.json(tanks);
+    }).catch(err=>{
+        console.log(err);
+        res.status(500).send("something want wrong");
+    })
+})
+
+router.get("/:id",(req,res)=>{
+    db.Tank.findOne({
+        where:{
+            id:req.params.id
+        },
+        include:[db.Fish]
+    }).then(dbTank=>{
+        res.json(dbTank);
     }).catch(err=>{
         console.log(err);
         res.status(500).send("something want wrong");
@@ -46,6 +62,61 @@ router.post("/",(req,res)=>{
     }).catch(err=>{
         console.log(err);
         res.status(500).send("something want wrong");
+    })
+})
+
+router.put("/:id",(req,res)=>{
+    const loggedInUser = checkAuthStatus(req);
+    if(!loggedInUser){
+        return res.status(401).send("login first brotato")
+    }
+    db.Tank.findOne({
+        where:{
+            id:req.params.id
+        }
+    }).then(tank=>{
+        if(loggedInUser.id===tank.UserId){
+            db.Tank.update({
+                name:req.body.name
+            },{
+                where:{
+                    id:tank.id
+                }
+            }).then(editTank=>{
+                res.json(editTank)
+            }).catch(err=>{
+                console.log(err);
+                res.status(500).send("something want wrong");
+            })
+        } else {
+            return res.status(401).send("not your tank!")
+        }
+    })
+})
+router.delete("/:id",(req,res)=>{
+    const loggedInUser = checkAuthStatus(req);
+    if(!loggedInUser){
+        return res.status(401).send("login first brotato")
+    }
+    db.Tank.findOne({
+        where:{
+            id:req.params.id
+        }
+    }).then(tank=>{
+        if(loggedInUser.id===tank.UserId){
+            db.Tank.destroy({
+                where:{
+                    id:tank.id
+                }
+            }).then(delTank=>{
+                res.json(delTank)
+            }).catch(err=>{
+                console.log(err);
+                res.status(500).send("something want wrong");
+            })
+        } else {
+            return res.status(401).send("not your tank!")
+        }
     })
 })
 
