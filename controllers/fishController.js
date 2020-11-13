@@ -51,17 +51,27 @@ router.post("/", (req, res) => {
         return res.status(401).send("login first brotato")
     }
     console.log(loggedInUser);
-    db.Fish.create({
-        name: req.body.name,
-        width: req.body.width,
-        color:req.body.color,
-        UserId: loggedInUser.id,
-        TankId: req.body.tankId
-    }).then(newfish => {
-        res.json(newfish);
-    }).catch(err => {
-        console.log(err);
-        res.status(500).send("something want wrong");
+    db.Tank.findOne({
+        where:{
+            id:req.body.tankId
+        }
+    }).then(tankData=>{
+        if(tankData.UserId===loggedInUser.id){
+            db.Fish.create({
+                name: req.body.name,
+                width: req.body.width,
+                color:req.body.color,
+                UserId: loggedInUser.id,
+                TankId: req.body.tankId
+            }).then(newfish => {
+               return  res.json(newfish);
+            }).catch(err => {
+                console.log(err);
+                return res.status(500).send("something want wrong");
+            })
+        } else{
+            return res.status(401).send("not your tank")
+        }
     })
 })
 
