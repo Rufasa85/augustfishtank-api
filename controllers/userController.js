@@ -76,17 +76,17 @@ router.get("/secretProfile", (req, res) => {
         return res.status(401).send("invalid token")
     }
     db.User.findOne({
-        where:{
-            id:loggedInUser.id
+        where: {
+            id: loggedInUser.id
         },
-        include :[{
-            model:db.Tank,
-            include:[db.Fish]
+        include: [{
+            model: db.Tank,
+            include: [db.Fish]
         },
-    db.Fish]
-    }).then(dbUser=>{
+        db.Fish]
+    }).then(dbUser => {
         res.json(dbUser)
-    }).catch(err=>{
+    }).catch(err => {
         console.log(err);
         res.status(500).send("an error occured please try again later");
     })
